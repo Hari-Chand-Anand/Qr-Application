@@ -1,0 +1,43 @@
+{
+  "name": "qr-machine",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "node --loader ts-node/esm prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.2",
+    "jose": "6.1.3",
+    "lucide-react": "0.563.0",
+    "nanoid": "5.1.6",
+    "next": "16.1.6",
+    "papaparse": "^5.5.3",
+    "qrcode": "^1.5.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/papaparse": "^5.3.16",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "19.2.10",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.1.6",
+    "postcss": "^8.0.0",
+    "prisma": "^6.19.2",
+    "tailwindcss": "4.1.18",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Use a non-pooled connection for migrations/DDL (recommended with Neon/PgBouncer)
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  sheetId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  machines  Machine[]
+}
+
+model Machine {
+  id               String   @id @default(cuid())
+  machineId        String   @unique
+  name             String
+  driveLink        String
+
+  /**
+   * Service reports source for this machine.
+   * Recommended: a TAB NAME inside the company's Google Sheet.
+   * Also supported: a direct CSV URL (gviz/export) or a Google Sheets tab URL (with gid=...)
+   */
+  sheetsLink       String
+
+  whatsappNumber   String?
+  whatsappTemplate String?
+
+  // Optional: assign this machine to a company so APIs know which Google Sheet to read.
+  companyId        String?
+  company          Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
