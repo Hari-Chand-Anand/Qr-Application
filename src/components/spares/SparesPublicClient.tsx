@@ -50,9 +50,9 @@ export function SparesPublicClient({ machineId }: { machineId: string }) {
 
   const stats = useMemo(
     () => [
-      { label: "Total Parts Installed", value: summary.totalInstalledQty },
+      { label: "Total Parts Installed", value: summary.openCount  },
       { label: "Last Installation Date", value: summary.lastInstallationDate },
-      { label: "Pending Parts", value: summary.pendingQty },
+      { label: "Pending Parts", value: summary.closeCount  },
     ],
     [summary]
   );
