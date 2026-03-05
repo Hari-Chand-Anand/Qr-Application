@@ -36,13 +36,15 @@ export function matchesSearch(row: SpareRow, q: string) {
 }
 
 export function computeSummary(rows: SpareRow[]) {
-  const totalInstalledQty = rows.filter(
-    (r) => String(r.Status || "").trim().toLowerCase() === "Open"
-  ).length;
+  const norm = (v: any) => String(v ?? "").trim().toLowerCase();
 
-  const pendingQty = rows.filter(
-    (r) => String(r.Status || "").trim().toLowerCase() === "Close"
-  ).length;
+  const openCount = rows.filter((r) => norm(r.Status) === "open").length;
+
+  // support both "close" and "closed"
+  const closeCount = rows.filter((r) => {
+    const s = norm(r.Status);
+    return s === "close" || s === "closed";
+  }).length;
 
   const lastDate = rows
     .map((r) => parseDateSafe(r.Date))
@@ -50,8 +52,8 @@ export function computeSummary(rows: SpareRow[]) {
     .sort((a, b) => b.getTime() - a.getTime())[0];
 
   return {
-    totalInstalledQty,
-    pendingQty,
+    openCount,
+    closeCount,
     lastInstallationDate: lastDate
       ? lastDate.toLocaleDateString(undefined, {
           year: "numeric",

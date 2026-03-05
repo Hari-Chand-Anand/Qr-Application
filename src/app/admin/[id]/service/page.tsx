@@ -63,11 +63,11 @@ export default async function AdminMachineServicePage({
   const rows = await fetchService(baseUrl, machine.machineId);
 
   const summary = computeSummary(rows);
-  const stats = [
-    { label: "Open/Close", value: summary.totalInstalledQty },
-    { label: "Last Date", value: summary.lastInstallationDate },
-    { label: "Close", value: summary.pendingQty },
-  ];
+ const stats = [
+  { label: "Open", value: summary.openCount },
+  { label: "Last Date", value: summary.lastInstallationDate },
+  { label: "Closed", value: summary.closeCount },
+];
 
   return (
     <div className="space-y-4">
