@@ -66,7 +66,7 @@ export default async function AdminMachineServicePage({
   const stats = [
     { label: "Open/Close", value: summary.totalInstalledQty },
     { label: "Last Date", value: summary.lastInstallationDate },
-    { label: "Pending", value: summary.pendingQty },
+    { label: "Close", value: summary.pendingQty },
   ];
 
   return (
