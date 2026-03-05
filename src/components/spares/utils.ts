@@ -37,11 +37,11 @@ export function matchesSearch(row: SpareRow, q: string) {
 
 export function computeSummary(rows: SpareRow[]) {
   const totalInstalledQty = rows.filter(
-    (r) => String(r.Status || "").trim().toLowerCase() === "installed"
+    (r) => String(r.Status || "").trim().toLowerCase() === "Open"
   ).length;
 
   const pendingQty = rows.filter(
-    (r) => String(r.Status || "").trim().toLowerCase() === "pending"
+    (r) => String(r.Status || "").trim().toLowerCase() === "Close"
   ).length;
 
   const lastDate = rows
