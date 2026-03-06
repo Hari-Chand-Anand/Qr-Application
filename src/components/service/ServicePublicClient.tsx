@@ -7,7 +7,7 @@ import { LoadingSpinner } from "@/components/spares/LoadingSpinner";
 import { SparesFilters } from "@/components/spares/SparesFilters";
 import { SparesMobileList } from "@/components/spares/SparesMobileList";
 import { StatCards } from "@/components/spares/StatCards";
-import { computeSummary, matchesSearch } from "@/components/spares/utils";
+import { computeSummary, matchesSearch, parseDateSafe } from "@/components/spares/utils";
 
 /**
  * Public service dashboard (mobile-friendly).
@@ -44,19 +44,57 @@ export function ServicePublicClient({ machineId }: { machineId: string }) {
 
   const filtered = useMemo(() => {
     return rows.filter((r) => {
-      const okStatus = status === "All" ? true : String(r.Status || "").trim() === status;
+      const okStatus =
+        status === "All" ? true : String(r.Status || "").trim() === status;
       const okSearch = matchesSearch(r, search);
       return okStatus && okSearch;
     });
   }, [rows, search, status]);
 
+  // Summary (if you use it elsewhere / future)
   const summary = useMemo(() => computeSummary(filtered), [filtered]);
 
+  // ✅ Warranty cards should be based on ALL rows (not filtered)
+  const warranty = useMemo(() => {
+    const dates = rows
+      .map((r) => parseDateSafe(r.Date))
+      .filter((d): d is Date => !!d);
+
+    if (dates.length === 0) {
+      return { start: "-", end: "-" };
+    }
+
+    const startDate = dates.sort((a, b) => a.getTime() - b.getTime())[0];
+
+    const endDate = new Date(startDate);
+    endDate.setFullYear(endDate.getFullYear() + 1);
+
+    const fmt = (d: Date) =>
+      d.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      });
+
+    return {
+      start: fmt(startDate),
+      end: fmt(endDate),
+    };
+  }, [rows]);
 
   if (loading) return <LoadingSpinner />;
 
   return (
     <>
+      {/* ✅ Warranty cards (between header section and Search card) */}
+      <div className="mb-4">
+        <StatCards
+          stats={[
+            { label: "Warranty Start", value: warranty.start },
+            { label: "Warranty End", value: warranty.end },
+          ]}
+        />
+      </div>
 
       <Card className="p-4 mb-4">
         <SparesFilters
