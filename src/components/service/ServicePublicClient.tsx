@@ -6,7 +6,6 @@ import { Card } from "@/components/ui";
 import { LoadingSpinner } from "@/components/spares/LoadingSpinner";
 import { SparesFilters } from "@/components/spares/SparesFilters";
 import { SparesMobileList } from "@/components/spares/SparesMobileList";
-import { StatCards } from "@/components/spares/StatCards";
 import { computeSummary, matchesSearch, parseDateSafe } from "@/components/spares/utils";
 
 /**
@@ -51,7 +50,7 @@ export function ServicePublicClient({ machineId }: { machineId: string }) {
     });
   }, [rows, search, status]);
 
-  // Summary (if you use it elsewhere / future)
+  // Summary (kept if you use later)
   const summary = useMemo(() => computeSummary(filtered), [filtered]);
 
   // ✅ Warranty cards should be based on ALL rows (not filtered)
@@ -60,12 +59,9 @@ export function ServicePublicClient({ machineId }: { machineId: string }) {
       .map((r) => parseDateSafe(r.Date))
       .filter((d): d is Date => !!d);
 
-    if (dates.length === 0) {
-      return { start: "-", end: "-" };
-    }
+    if (dates.length === 0) return { start: "-", end: "-" };
 
     const startDate = dates.sort((a, b) => a.getTime() - b.getTime())[0];
-
     const endDate = new Date(startDate);
     endDate.setFullYear(endDate.getFullYear() + 1);
 
@@ -76,24 +72,28 @@ export function ServicePublicClient({ machineId }: { machineId: string }) {
         day: "2-digit",
       });
 
-    return {
-      start: fmt(startDate),
-      end: fmt(endDate),
-    };
+    return { start: fmt(startDate), end: fmt(endDate) };
   }, [rows]);
 
   if (loading) return <LoadingSpinner />;
 
   return (
     <>
-      {/* ✅ Warranty cards (between header section and Search card) */}
-      <div className="mb-4">
-        <StatCards
-          stats={[
-            { label: "Warranty Start", value: warranty.start },
-            { label: "Warranty End", value: warranty.end },
-          ]}
-        />
+      {/* ✅ Warranty cards: fixed row, equal width */}
+      <div className="mb-4 grid grid-cols-2 gap-3">
+        <Card className="p-4 rounded-3xl bg-white/60 border border-black/10">
+          <div className="text-xs text-black/50">Warranty Start</div>
+          <div className="mt-2 text-xl font-semibold text-black">
+            {warranty.start}
+          </div>
+        </Card>
+
+        <Card className="p-4 rounded-3xl bg-white/60 border border-black/10">
+          <div className="text-xs text-black/50">Warranty End</div>
+          <div className="mt-2 text-xl font-semibold text-black">
+            {warranty.end}
+          </div>
+        </Card>
       </div>
 
       <Card className="p-4 mb-4">
