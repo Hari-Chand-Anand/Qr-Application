@@ -1,3 +1,5 @@
+// src/app/admin/[id]/service/page.tsx
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
@@ -6,12 +8,11 @@ import { unstable_noStore as noStore } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { envPublic } from "@/lib/env";
 import type { SpareRow as TicketRow } from "@/components/spares/types";
-import { computeSummary } from "@/components/spares/utils";
+import { computeSummary, parseDateSafe } from "@/components/spares/utils";
 import { StatCards } from "@/components/spares/StatCards";
 import { SparesAdminClient } from "@/components/spares/SparesAdminClient";
 
 export const runtime = "nodejs";
-// Avoid DB access during build-time prerender
 export const dynamic = "force-dynamic";
 
 async function getBaseUrl() {
@@ -44,6 +45,14 @@ async function fetchService(baseUrl: string, machineId: string): Promise<TicketR
   }
 }
 
+function formatDate(d: Date) {
+  return d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  });
+}
+
 export default async function AdminMachineServicePage({
   params,
 }: {
@@ -63,11 +72,31 @@ export default async function AdminMachineServicePage({
   const rows = await fetchService(baseUrl, machine.machineId);
 
   const summary = computeSummary(rows);
- const stats = [
-  { label: "Open", value: summary.openCount },
-  { label: "Last Date", value: summary.lastInstallationDate },
-  { label: "Closed", value: summary.closeCount },
-];
+
+  const stats = [
+    { label: "Open", value: (summary as any).openCount ?? summary.openCount  ?? 0 },
+    { label: "Last Date", value: summary.lastInstallationDate ?? "-" },
+    { label: "Closed", value: (summary as any).closeCount ?? summary.closeCount ?? 0 },
+  ];
+
+  // ✅ Warranty cards (based on earliest Date in sheet)
+  const dates = rows
+    .map((r) => parseDateSafe((r as any).Date))
+    .filter((d): d is Date => !!d)
+    .sort((a, b) => a.getTime() - b.getTime());
+
+  const warrantyStart = dates.length ? formatDate(dates[0]) : "-";
+  const warrantyEnd = (() => {
+    if (!dates.length) return "-";
+    const end = new Date(dates[0]);
+    end.setFullYear(end.getFullYear() + 1);
+    return formatDate(end);
+  })();
+
+  const warrantyStats = [
+    { label: "Warranty Start", value: warrantyStart },
+    { label: "Warranty End", value: warrantyEnd },
+  ];
 
   return (
     <div className="space-y-4">
@@ -94,6 +123,10 @@ export default async function AdminMachineServicePage({
       </div>
 
       <StatCards stats={stats} />
+
+      {/* ✅ Warranty cards appear above the Search/Filters (inside SparesAdminClient) */}
+      <StatCards stats={warrantyStats} />
+
       <SparesAdminClient rows={rows} />
     </div>
   );
